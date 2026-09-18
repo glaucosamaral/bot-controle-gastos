@@ -10,8 +10,9 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/migrations:/docker-entrypoint-initdb.d:ro
+    # Porta 5433 no host para nao conflitar com o Postgres local (5432).
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
   backend:
     build: ./backend
@@ -38,9 +39,7 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      N8N_BASIC_AUTH_ACTIVE: "true"
-      N8N_BASIC_AUTH_USER: ${N8N_USER}
-      N8N_BASIC_AUTH_PASSWORD: ${N8N_PASSWORD}
+      # URL publica HTTPS usada pelo Telegram para chamar o webhook.
       WEBHOOK_URL: ${N8N_WEBHOOK_URL}
     ports:
       - "5678:5678"
