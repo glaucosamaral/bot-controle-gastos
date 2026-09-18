@@ -1,0 +1,25 @@
+# Dependencias (lockfiles SÃO versionados)
+node_modules/
+
+# Build
+dist/
+build/
+*.tsbuildinfo
+
+# Ambiente e segredos (nunca versionar)
+.env
+.env.local
+*.pem
+*.key
+
+# Banco local
+pgdata/
+
+# n8n local
+.n8n/
+
+# SO e editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

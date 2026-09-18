@@ -1,0 +1,29 @@
+{
+  "name": "telegram-expenses",
+  "nodes": [
+    {
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "position": [320, 300],
+      "parameters": {
+        "updates": ["message"]
+      },
+      "notes": "Configure o bot com TELEGRAM_BOT_TOKEN. Formato esperado: descricao valor categoria (ex: mercado 85.50 alimentacao)"
+    },
+    {
+      "name": "Salvar na API",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [540, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:3001/api/v1/expenses",
+        "jsonBody": "={ \"telegramId\": \"{{ $node['Telegram Trigger'].json.message.from.id }}\", \"descricao\": \"{{ $node['Telegram Trigger'].json.message.text.split(' ').slice(0, -2).join(' ') }}\", \"valorCentavos\": {{ $node['Telegram Trigger'].json.message.text.split(' ').slice(-2, -1)[0].toFloat() * 100 }}, \"categoria\": \"{{ $node['Telegram Trigger'].json.message.text.split(' ').slice(-1)[0] }}\" }"
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [[{ "node": "Salvar na API", "type": "main", "index": 0 }]]
+    }
+  }
+}
