@@ -27,7 +27,11 @@ services:
       - postgres
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_TELEGRAM_BOT_USERNAME: ${VITE_TELEGRAM_BOT_USERNAME}
     restart: unless-stopped
     ports:
       - "5173:80"
@@ -41,6 +45,12 @@ services:
     environment:
       # URL publica HTTPS usada pelo Telegram para chamar o webhook.
       WEBHOOK_URL: ${N8N_WEBHOOK_URL}
+      # Aumenta o rate limit da API/editor para setups automatizados locais.
+      N8N_API_RATE_LIMIT_MAX: 1000
+      N8N_API_RATE_LIMIT_DURATION: 60
+      # Permite usar ={{ $env.N8N_WEBHOOK_SECRET }} nos nos (p/ assinar o
+      # webhook com X-Webhook-Secret). Bloqueado por padrao no n8n 1.x.
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
     ports:
       - "5678:5678"
     volumes:

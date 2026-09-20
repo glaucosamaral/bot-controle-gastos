@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { pool } from "../db/pool.js";
+import { requireAuth, requireWebhookSecret, type UsuarioAutenticado } from "../middleware/auth.js";
 import { expenseSchema } from "../validation/expenseSchema.js";
 
 export const expensesRouter = Router();
 
-// POST /api/v1/expenses — usado pelo workflow do n8n.
-expensesRouter.post("/", async (req, res) => {
+// POST /api/v1/expenses — usado pelo workflow do n8n (autenticado por X-Webhook-Secret).
+expensesRouter.post("/", requireWebhookSecret, async (req, res) => {
   const parsed = expenseSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(422).json({
@@ -55,15 +56,9 @@ expensesRouter.post("/", async (req, res) => {
   }
 });
 
-// GET /api/v1/expenses?telegramId=...&pagina=1&limite=20
-expensesRouter.get("/", async (req, res) => {
-  const telegramId = String(req.query.telegramId ?? "");
-  if (!telegramId) {
-    res.status(422).json({
-      error: { code: "DADOS_INVALIDOS", message: "Informe o telegramId." },
-    });
-    return;
-  }
+// GET /api/v1/expenses?pagina=1&limite=20 — autenticado via Bearer JWT.
+expensesRouter.get("/", requireAuth, async (req, res) => {
+  const { telegramId } = res.locals.usuario as UsuarioAutenticado;
   const limite = Math.min(Number(req.query.limite ?? 20), 100);
   const pagina = Math.max(Number(req.query.pagina ?? 1), 1);
   try {

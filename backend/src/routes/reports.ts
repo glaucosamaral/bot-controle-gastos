@@ -1,15 +1,16 @@
 import { Router } from "express";
 import { pool } from "../db/pool.js";
+import { requireAuth, type UsuarioAutenticado } from "../middleware/auth.js";
 
 export const reportsRouter = Router();
 
-// GET /api/v1/reports/monthly?telegramId=...&mes=2026-09 — total por categoria.
-reportsRouter.get("/monthly", async (req, res) => {
-  const telegramId = String(req.query.telegramId ?? "");
+// GET /api/v1/reports/monthly?mes=2026-09 — total por categoria (autenticado via JWT).
+reportsRouter.get("/monthly", requireAuth, async (req, res) => {
+  const { telegramId } = res.locals.usuario as UsuarioAutenticado;
   const mes = String(req.query.mes ?? "");
-  if (!telegramId || !/^\d{4}-\d{2}$/.test(mes)) {
+  if (!/^\d{4}-\d{2}$/.test(mes)) {
     res.status(422).json({
-      error: { code: "DADOS_INVALIDOS", message: "Informe telegramId e mes (AAAA-MM)." },
+      error: { code: "DADOS_INVALIDOS", message: "Informe o mês (AAAA-MM)." },
     });
     return;
   }
